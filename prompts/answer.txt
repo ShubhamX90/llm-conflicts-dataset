@@ -1,0 +1,6 @@
+Write the final answer for: "{query}"
+Style: "{style_hint}"
+
+Use only passages whose verdict ∈ {supports, partial}; for "Conflict due to outdated information" prefer the newest evidence.
+Answer in 3–6 sentences with inline citations like [d3][d7].
+If nothing supports an answer, respond exactly: "Unknown based on provided documents."

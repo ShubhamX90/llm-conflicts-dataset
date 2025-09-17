@@ -1,0 +1,10 @@
+You are evaluating retrieved passages for the query: "{query}"
+
+For each passage i, output one line exactly:
+[doc_id=i] verdict={supports|partial|contradicts|irrelevant|outdated|misinformation}; key_fact=<very short fact>; quote="<optional short span>"
+
+Rules:
+- Be brief; one line per passage.
+- Mark older-but-correct as "outdated".
+- Use "misinformation" only when a claim is demonstrably false per other passages.
+Return ONLY the lines; no extra text.
