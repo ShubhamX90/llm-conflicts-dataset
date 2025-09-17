@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import json, pathlib, textwrap
+import json, pathlib, textwrap, sys
 
-INP  = pathlib.Path("data/working/sample_50.jsonl")
+INP  = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path("data/working/sample_50.jsonl")
 OUT  = pathlib.Path("data/annotated/train.jsonl")
 PROG = pathlib.Path("data/annotated/.progress.json")
 
@@ -13,10 +13,10 @@ VERDICT = {
 
 STYLE = {
   "No conflict": "Give a single direct answer grounded in the most relevant passage(s). No hedging.",
-  "Complementary information": "Synthesize multiple valid facets; combine complementary details. Do not invent contradictions.",
-  "Conflicting opinions and research outcomes": "Present the differing positions neutrally; attribute each stance to its citations; avoid picking a side unless recency/evidence quality clearly favors one.",
-  "Conflict due to outdated information": "Prefer the most recent reliable data; you may note older values but clarify they are outdated.",
-  "Conflict due to misinformation": "Ignore incorrect claims; state the verified fact with reliable citations.",
+  "Complementary": "Synthesize multiple valid facets; combine complementary details. Do not invent contradictions.",
+  "Conflicting opinions": "Present the differing positions neutrally; attribute each stance; avoid picking a side unless recency/evidence quality clearly favors one.",
+  "Outdated": "Prefer the most recent reliable data; you may note older values but clarify they are outdated.",
+  "Misinformation": "Ignore incorrect claims; state the verified fact with reliable citations.",
 }
 
 def read_jsonl(p):
@@ -35,7 +35,6 @@ def load_progress()->set:
 def wrap(s, w=98): return "\n".join(textwrap.wrap(s or "", width=w))
 
 def annotate(ex):
-    # per-doc notes
     notes = []
     for d in ex["docs"]:
         print("\n"+"-"*100)
@@ -49,14 +48,12 @@ def annotate(ex):
         quote = input("Optional short quote/span: ").strip()
         notes.append({"doc_id": d["doc_id"], "verdict": VERDICT[v], "key_fact": key, "quote": quote})
 
-    # final answer / abstain
     ctype = ex["conflict_type"]
     style = STYLE.get(ctype, "")
     supp_ids = [n["doc_id"] for n in notes if n["verdict"] in {"supports","partial"}]
 
     print("\n"+"="*100)
     print("QUERY:", wrap(ex["query"]))
-    if ex.get("ref_answer"): print("\n(ref answer from dataset; optional cross-check)\n", wrap(ex["ref_answer"]))
     print("\nStyle:", style)
     print("Supporting docs:", supp_ids or "(none)")
     while True:

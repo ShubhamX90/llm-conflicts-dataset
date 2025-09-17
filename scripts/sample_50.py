@@ -8,11 +8,12 @@ IDS  = pathlib.Path("data/working/sample_50_ids.json")
 
 TARGET = {
   "No conflict": 10,
-  "Complementary information": 10,
-  "Conflicting opinions and research outcomes": 10,
-  "Conflict due to outdated information": 10,
-  "Conflict due to misinformation": 10,
+  "Complementary": 10,
+  "Conflicting opinions": 10,
+  "Outdated": 10,
+  "Misinformation": 10,
 }
+TOTAL = 50
 
 def read_jsonl(p):
     with p.open() as f:
@@ -30,17 +31,21 @@ def main():
     picked = []
     for c, k in TARGET.items():
         pool = by.get(c, [])
-        if not pool: continue
+        if not pool: 
+            continue
         k = min(k, len(pool))
         picked.extend(rng.sample(pool, k))
 
-    if len(picked) < 50:
+    if len(picked) < TOTAL:
         seen = {ex["id"] for ex in picked}
         rest = [ex for ex in data if ex["id"] not in seen]
-        picked.extend(rng.sample(rest, 50 - len(picked)))
+        picked.extend(rng.sample(rest, TOTAL - len(picked)))
 
     SAMP.write_text("\n".join(json.dumps(ex, ensure_ascii=False) for ex in picked) + "\n")
     IDS.write_text(json.dumps([ex["id"] for ex in picked], indent=2))
+
+    cnt = collections.Counter(ex["conflict_type"] for ex in picked)
+    print("Counts per type:", dict(cnt))
     print(f"Saved {len(picked)} → {SAMP}")
     print(f"IDs → {IDS}")
 
